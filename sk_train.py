@@ -77,7 +77,9 @@ files_bg = [
 # 'data/inclusive_data_obs_weight.root',
 ]
 
-selection = '1'
+selection = 'vbf_mjj>500. && abs(vbf_deta)>3.5 '
+selection = 'n_jets>0.5 && !(vbf_mjj>500. && abs(vbf_deta)>3.5)'
+selection = 'n_jets < 0.5'
 
 def createGBRT(learning_rate=0.01, max_depth=4, n_estimators=1000, subSample=0.5):
     clf = GradientBoostingClassifier(n_estimators=n_estimators, learning_rate=learning_rate, max_depth=max_depth, random_state=1, loss='deviance', verbose=1, subsample=subSample, max_features=0.5) #loss='exponential'/'deviance'
@@ -175,7 +177,9 @@ def train(clf, training_data, target, weights, set_neg_to_zero=True):
         #     print 'Fake rate at signal eff', eff, fpr[np.argmax(tpr>eff)]
     
         # Can save with different features if necessary
-        joblib.dump(clf, 'train/{name}_clf_{i_fold}.pkl'.format(name=clf.__class__.__name__, i_fold=i_fold), compress=9)
+        # joblib.dump(clf, 'train/{name}_clf_{i_fold}_vbf.pkl'.format(name=clf.__class__.__name__, i_fold=i_fold), compress=9)
+        # joblib.dump(clf, 'train/{name}_clf_{i_fold}_1jet.pkl'.format(name=clf.__class__.__name__, i_fold=i_fold), compress=9)
+        joblib.dump(clf, 'train/{name}_clf_{i_fold}_0jet.pkl'.format(name=clf.__class__.__name__, i_fold=i_fold), compress=9)
 
     # if doCrossVal:
     print 'Feature importances:'
