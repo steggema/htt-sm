@@ -22,6 +22,7 @@ from root_numpy import root2array, root2rec
 def trainVars():
     return [
     'mt',
+    'mt_leg2',
     'n_jets',
     'met_pt',
     'pthiggs',
@@ -30,10 +31,15 @@ def trainVars():
     'vbf_n_central',
     'l2_pt',
     'l1_pt',
-    'svfit_transverse_mass',
-    'delta_phi_l1_l2',
-    'delta_eta_l1_l2',
-    'svfit_mass'
+    # 'svfit_transverse_mass',
+    # 'delta_phi_l1_l2',
+    # 'delta_eta_l1_l2',
+    'dil_pt',
+    'dil_eta',
+    'jet1_pt',
+    'mt_total',
+    'delta_r_l1_l2',
+    'mvis'
     ]
 
 files_vbf = [
@@ -49,10 +55,10 @@ files_signal = files_vbf + files_ggh
 
 files_bg = [
 'data/inclusive_TBarToLeptons_tch_powheg_weight.root',
-'data/inclusive_TBar_tWch_weight.root',
-'data/inclusive_TT_weight.root',
 'data/inclusive_TToLeptons_tch_powheg_weight.root',
+'data/inclusive_TBar_tWch_weight.root',
 'data/inclusive_T_tWch_weight.root',
+'data/inclusive_TT_weight.root',
 'data/inclusive_VVTo2L2Nu_weight.root',
 'data/inclusive_W1Jets_weight.root',
 'data/inclusive_W2Jets_weight.root',
@@ -62,13 +68,13 @@ files_bg = [
 'data/inclusive_WZTo1L1Nu2Q_weight.root',
 'data/inclusive_WZTo1L3Nu_weight.root',
 'data/inclusive_WZTo2L2Q_weight.root',
-'data/inclusive_WZTo3L_weight.root',
-'data/inclusive_W_weight.root',
-'data/inclusive_ZJM10_weight.root',
+# 'data/inclusive_WZTo3L_weight.root',
+# 'data/inclusive_W_weight.root',
+# 'data/inclusive_ZJM10_weight.root',
 'data/inclusive_ZJ_weight.root',
-'data/inclusive_ZLM10_weight.root',
+# 'data/inclusive_ZLM10_weight.root',
 'data/inclusive_ZL_weight.root',
-'data/inclusive_ZTTM10_weight.root',
+# 'data/inclusive_ZTTM10_weight.root',
 # 'data/inclusive_ZTT_weight.root',
 'data/inclusive_ZZTo2L2Q_weight.root',
 'data/inclusive_ZZTo4L_weight.root',

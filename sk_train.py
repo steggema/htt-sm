@@ -18,68 +18,51 @@ from sklearn.metrics import roc_curve
 from sklearn.externals import joblib
 
 from root_numpy import root2array, root2rec
-
 def trainVars():
     return [
-    'mt',
-    'n_jets',
-    'met_pt',
-    'pthiggs',
-    'vbf_mjj',
-    'vbf_deta',
-    'vbf_n_central',
-    'l2_pt',
-    'l1_pt',
-    'svfit_transverse_mass',
-    'delta_phi_l1_l2',
-    'delta_eta_l1_l2',
-    'svfit_mass'
+        'mt', 'l2_mt', 'n_jets', 'met_pt', 'pthiggs', 'vbf_mjj', 'vbf_deta', 'vbf_n_central', 'l2_pt', 'l1_pt','mvis', 'l1_eta', 'l2_eta', 'delta_phi_l1_l2', 'delta_eta_l1_l2', 'pt_l1l2', 'delta_phi_j1_met', 'pzeta_disc', 'jet1_pt', 'jet1_eta'
     ]
 
 files_vbf = [
-    'data/inclusive_HiggsVBF125_weight.root',
-    'data/inclusive_HiggsGGH125_weight.root'
+    'data/inclusive_HiggsVBF125.root',
+    'data/inclusive_HiggsGGH125.root'
 ]
 
-files_ggh = [
-    # 'data/inclusive_HiggsGGH125_weight.root'
-    'data/inclusive_ZTT_weight.root',
-    'data/inclusive_ZTTM10_weight.root',
+files_ztt = [
+    'data/inclusive_ZTT.root', 
 ]
 
-files_signal = files_vbf + files_ggh
+files_signal = files_vbf + files_ztt
 
 files_bg = [
-'data/inclusive_TBarToLeptons_tch_powheg_weight.root',
-'data/inclusive_TBar_tWch_weight.root',
-'data/inclusive_TT_weight.root',
-'data/inclusive_TToLeptons_tch_powheg_weight.root',
-'data/inclusive_T_tWch_weight.root',
-'data/inclusive_VVTo2L2Nu_weight.root',
-'data/inclusive_W1Jets_weight.root',
-'data/inclusive_W2Jets_weight.root',
-'data/inclusive_W3Jets_weight.root',
-'data/inclusive_W4Jets_weight.root',
-'data/inclusive_WWTo1L1Nu2Q_weight.root',
-'data/inclusive_WZTo1L1Nu2Q_weight.root',
-'data/inclusive_WZTo1L3Nu_weight.root',
-'data/inclusive_WZTo2L2Q_weight.root',
-'data/inclusive_WZTo3L_weight.root',
-'data/inclusive_W_weight.root',
-'data/inclusive_ZJM10_weight.root',
-'data/inclusive_ZJ_weight.root',
-'data/inclusive_ZLM10_weight.root',
-'data/inclusive_ZL_weight.root',
-# 'data/inclusive_ZTTM10_weight.root',
-# 'data/inclusive_ZTT_weight.root',
-'data/inclusive_ZZTo2L2Q_weight.root',
-'data/inclusive_ZZTo4L_weight.root',
-# 'data/inclusive_data_obs_weight.root',
+'data/inclusive_TBarToLeptons_tch_powheg.root',
+'data/inclusive_TToLeptons_tch_powheg.root',
+'data/inclusive_TBar_tWch.root',
+'data/inclusive_T_tWch.root',
+'data/inclusive_TT.root',
+'data/inclusive_VVTo2L2Nu.root',
+'data/inclusive_WWTo1L1Nu2Q.root',
+'data/inclusive_WZTo1L1Nu2Q.root',
+'data/inclusive_WZTo1L3Nu.root',
+'data/inclusive_WZTo2L2Q.root',
+# 'data/inclusive_WZTo3L.root',
+'data/inclusive_W.root',
+# 'data/inclusive_ZJM10.root',
+'data/inclusive_ZJ.root',
+# 'data/inclusive_ZLM10.root',
+'data/inclusive_ZL.root',
+# 'data/inclusive_ZTTM10.root',
+# 'data/inclusive_ZTT.root',
+'data/inclusive_ZZTo2L2Q.root',
+'data/inclusive_ZZTo4L.root',
+'data/inclusive_QCD.root',
+# 'data/inclusive_data_obs.root',
 ]
 
 selection = 'vbf_mjj>500. && abs(vbf_deta)>3.5 '
 selection = 'n_jets>0.5 && !(vbf_mjj>500. && abs(vbf_deta)>3.5)'
 selection = 'n_jets < 0.5'
+selection = '1.'
 
 def createGBRT(learning_rate=0.01, max_depth=4, n_estimators=1000, subSample=0.5):
     clf = GradientBoostingClassifier(n_estimators=n_estimators, learning_rate=learning_rate, max_depth=max_depth, random_state=1, loss='deviance', verbose=1, subsample=subSample, max_features=0.5) #loss='exponential'/'deviance'
@@ -90,8 +73,8 @@ def createGBRT(learning_rate=0.01, max_depth=4, n_estimators=1000, subSample=0.5
 def train(clf, training_data, target, weights, set_neg_to_zero=True):
     print clf
 
-    sumWeightsSignal = np.sum(weights * target)
-    sumWeightsBackground = sum(weights * (1 - target))
+    sumWeightsSignal = np.sum(weights[np.where(target == 1)])
+    sumWeightsBackground = sum(weights[np.where(target == 0)])
 
     print 'Sum weights signal', sumWeightsSignal
     print 'Sum weights background', sumWeightsBackground
@@ -145,21 +128,21 @@ def train(clf, training_data, target, weights, set_neg_to_zero=True):
 
         effs = [0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 
-        print 'ggh vs background'
+        print 'ZTT vs background'
 
         fpr, tpr, tresholds = roc_curve(t_test[np.where(t_test > 0)], scores[np.where(t_test > 0)][:,1:2], sample_weight=w_test[np.where(t_test > 0)], pos_label=1)
 
         for eff in effs:
             print 'Fake rate at signal eff', eff, fpr[np.argmax(tpr>eff)]
 
-        print 'VBF vs background'
+        print 'VBF+ggH vs background'
 
         fpr, tpr, tresholds = roc_curve(t_test[np.where(t_test != 1)], scores[np.where(t_test != 1)][:,0:1], sample_weight=w_test[np.where(t_test != 1)], pos_label=0)
 
         for eff in effs:
             print 'Fake rate at signal eff', eff, fpr[np.argmax(tpr>eff)]
 
-        print 'VBF vs ggH'
+        print 'VBF+ggh vs ZTT'
 
         fpr, tpr, tresholds = roc_curve(t_test[np.where(t_test != 2)], scores[np.where(t_test != 2)][:,0:1], 
             sample_weight=w_test[np.where(t_test != 2)], pos_label=0)
@@ -195,39 +178,39 @@ def train(clf, training_data, target, weights, set_neg_to_zero=True):
 def readFiles():
     print 'Reading files...'
 
-    # weightsS = root2rec(files_signal, treename='tree', branches=['weight'], selection=selection)
-    weights_vbf = root2rec(files_vbf, treename='tree', branches=['weight'], selection=selection)['weight']
-    weights_ggh = root2rec(files_ggh, treename='tree', branches=['weight'], selection=selection)['weight']
-    weightsB = root2rec(files_bg, treename='tree', branches=['weight'], selection=selection)['weight']
+    # weightsS = root2rec(files_signal, treename='tree', branches=['full_weight'], selection=selection)
+    weights_vbf = root2rec(files_vbf, treename='tree', branches=['full_weight'], selection=selection)['full_weight']
+    weights_ztt = root2rec(files_ztt, treename='tree', branches=['full_weight'], selection=selection)['full_weight']
+    weightsB = root2rec(files_bg, treename='tree', branches=['full_weight'], selection=selection)['full_weight']
 
     sum_weights_vbf = np.sum(weights_vbf)
-    sum_weights_ggh = np.sum(weights_ggh)
+    sum_weights_ztt = np.sum(weights_ztt)
     sum_weightsB = np.sum(weightsB)
 
-    weights_ggh = weights_ggh * sum_weights_vbf/sum_weights_ggh
+    weights_ztt = weights_ztt * sum_weights_vbf/sum_weights_ztt
     weightsB = weightsB * sum_weights_vbf/sum_weightsB
 
     # nS = len(weightsS)
     n_vbf = len(weights_vbf)
-    n_ggh = len(weights_ggh)
+    n_ztt = len(weights_ztt)
     nB = len(weightsB)
 
     # fullWeight = np.concatenate((weightsS, weightsB))
-    fullWeight = np.concatenate((weights_vbf, weights_ggh, weightsB))
-    # fullWeight = fullWeight['weight']
+    fullWeight = np.concatenate((weights_vbf, weights_ztt, weightsB))
+    # fullWeight = fullWeight['full_weight']
 
     # fullWeight = np.ones(len(fullWeight))
 
     # del weightsS, weightsB
 
     # arrSB = root2array(files_signal + files_bg, treename='tree', branches=trainVars(), selection=selection)
-    arrSB = root2array(files_vbf + files_ggh + files_bg, treename='tree', branches=trainVars(), selection=selection)
+    arrSB = root2array(files_vbf + files_ztt + files_bg, treename='tree', branches=trainVars(), selection=selection)
 
     # Need a matrix-like array instead of a 1-D array of lists for sklearn
     arrSB = (np.asarray([arrSB[var] for var in trainVars()])).transpose()
 
     # targets = np.concatenate((np.ones(nS),np.zeros(nB)))
-    targets = np.concatenate((np.ones(n_vbf)*2, np.ones(n_ggh),np.zeros(nB)))
+    targets = np.concatenate((np.ones(n_vbf)*2, np.ones(n_ztt),np.zeros(nB)))
 
     print 'Done reading files.'
 
